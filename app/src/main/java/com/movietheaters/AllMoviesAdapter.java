@@ -19,7 +19,7 @@ public class AllMoviesAdapter extends BaseAdapter {
     List<MoviesPojo> moviesPojos;
     String theatername;
     Context cnt;
-    public AllMoviesAdapter(List<MoviesPojo> ar,String theatername, Context cnt)
+    public AllMoviesAdapter(List<MoviesPojo> ar, String theatername, Context cnt)
     {
         this.moviesPojos=ar;
         this.theatername=theatername;
@@ -54,7 +54,7 @@ public class AllMoviesAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 Toast.makeText(cnt, "Your Ticket Booked Succussfullly in "+theatername +"  "+moviesPojos.get(pos).getMovie_name() +"  Movie", Toast.LENGTH_LONG).show();
-                cnt.startActivity(new Intent(cnt,TheatersActivity.class));
+                cnt.startActivity(new Intent(cnt, TheatersActivity.class));
                 ((Activity)cnt).finish();
             }
         });

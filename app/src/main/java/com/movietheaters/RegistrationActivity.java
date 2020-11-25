@@ -1,8 +1,5 @@
 package com.movietheaters;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,13 +10,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 
@@ -27,6 +24,8 @@ public class RegistrationActivity extends AppCompatActivity {
     Button btn_submit;
     EditText et_name,et_email,et_phone,et_password;
     ProgressDialog loadingBar;
+    FirebaseFirestore db;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +39,7 @@ public class RegistrationActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         loadingBar = new ProgressDialog(RegistrationActivity.this);
+        db = FirebaseFirestore.getInstance();
 
         et_name=(EditText) findViewById(R.id.et_name);
         et_email=(EditText) findViewById(R.id.et_email);
@@ -93,65 +93,34 @@ public class RegistrationActivity extends AppCompatActivity {
 
     private void ValidatepEmail(final String name, final String phone, final String email,String password) {
 
-        final DatabaseReference RootRef;
-        RootRef = FirebaseDatabase.getInstance().getReference();
+        HashMap<String, Object> userdataMap = new HashMap<>();
+        userdataMap.put("email", email);
+        userdataMap.put("phone", phone);
+        userdataMap.put("name", name);
+        userdataMap.put("password", password);
 
-        RootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        db.collection("Registered_users")
+                .add(userdataMap)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Toast.makeText(RegistrationActivity.this, "Congratulations, your account has been created.", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
 
-                if (!(dataSnapshot.child("Registered_users").child(name).exists()))
-                {
-                    HashMap<String, Object> userdataMap = new HashMap<>();
-                    userdataMap.put("email", email);
-                    userdataMap.put("phone", phone);
-                    userdataMap.put("name", name);
-                    userdataMap.put("password", password);
+                        Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(RegistrationActivity.this, "Firestore Database issue", Toast.LENGTH_SHORT).show();
 
-
-                    RootRef.child("Registered_users").child(name).updateChildren(userdataMap)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task)
-                                {
-                                    if (task.isSuccessful())
-                                    {
-                                        Toast.makeText(RegistrationActivity.this, "Congratulations, your account has been created.", Toast.LENGTH_SHORT).show();
-                                        loadingBar.dismiss();
-
-                                       Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                    else
-                                    {
-                                        loadingBar.dismiss();
-                                        Toast.makeText(RegistrationActivity.this, "Network Error: Please try again after some time...", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
-
-                }
-                else
-                {
-                    Toast.makeText(RegistrationActivity.this, "This " + email + " already exists.", Toast.LENGTH_SHORT).show();
-                    loadingBar.dismiss();
-                    Toast.makeText(RegistrationActivity.this, "Please try again using another Email.", Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent(RegistrationActivity.this, RegistrationActivity.class);
-                    startActivity(intent);
-                }
-            }
-
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+                    }
+                });
 
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

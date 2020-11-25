@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -48,11 +49,12 @@ public class AllTheatersAdapter extends BaseAdapter {
         tv_theater_name.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(cnt, "ccc", Toast.LENGTH_SHORT).show();
 
                 Intent intent=new Intent(cnt,MoviessActivity.class);
                 intent.putExtra("theatername",theatersPojos.get(pos).getTheater_name());
                 cnt.startActivity(intent);
-                ((Activity)cnt).finish();
+                //((Activity)cnt).finish();
 
             }
         });
